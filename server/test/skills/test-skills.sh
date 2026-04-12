@@ -28,6 +28,19 @@ TASK_TIMEOUT=300
 # Poll interval in seconds
 POLL_INTERVAL=5
 
+# Resolve a `timeout` command. GNU coreutils ships `timeout`; macOS ships it as
+# `gtimeout` only if the user has `brew install coreutils`. Fall back to running
+# without a timeout and print a warning so CI and dev machines without GNU
+# coreutils still work.
+if command -v timeout >/dev/null 2>&1; then
+  TIMEOUT_CMD=(timeout "$TASK_TIMEOUT")
+elif command -v gtimeout >/dev/null 2>&1; then
+  TIMEOUT_CMD=(gtimeout "$TASK_TIMEOUT")
+else
+  echo "warning: no timeout/gtimeout found (install GNU coreutils: brew install coreutils). Running without a per-task timeout." >&2
+  TIMEOUT_CMD=()
+fi
+
 DRY_RUN=false
 FILTER=""
 PASSED=0
@@ -193,7 +206,11 @@ run_skill_test() {
   # Run the CLI command with timeout, capture output
   local output
   local exit_code=0
-  output=$(timeout "$TASK_TIMEOUT" bash -c "$cmd" 2>&1) || exit_code=$?
+  if [ ${#TIMEOUT_CMD[@]} -gt 0 ]; then
+    output=$("${TIMEOUT_CMD[@]}" bash -c "$cmd" 2>&1) || exit_code=$?
+  else
+    output=$(bash -c "$cmd" 2>&1) || exit_code=$?
+  fi
 
   if [ "$exit_code" -eq 124 ]; then
     log_fail "$skill - Timed out after ${TASK_TIMEOUT}s"
