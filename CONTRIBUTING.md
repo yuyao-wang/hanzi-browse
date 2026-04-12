@@ -58,11 +58,33 @@ Key internal docs:
 ### Good first contributions
 
 - **New skills** — just a `SKILL.md` file. See `server/skills/linkedin-prospector/SKILL.md` for the pattern.
+- **Domain knowledge** — add interaction tips for a website the agent supports. See the section below.
 - **Landing page** — pure HTML in `landing/`. No build step.
 - **Docs** — `landing/docs.html` is the public docs page.
 - **CLI improvements** — `server/src/cli/setup.ts` and `server/src/cli.ts`.
 - **Tool handlers** — each handler in `src/background/tool-handlers/` is isolated.
 - **Platform support** — we're primarily macOS. Windows and Linux contributions welcome.
+
+### Adding domain knowledge (site-specific interaction tips)
+
+All per-domain guidance lives in **`server/src/agent/domain-skills.json`** — a single JSON array shared by the server, extension, and SDK. When the agent navigates to a matching domain, these tips are injected into its system prompt automatically.
+
+> **Do NOT add files to `server/site-patterns/`.** That directory was removed. Any PR targeting it will need to be reworked. Use `domain-skills.json` instead.
+
+To add a new domain, append an entry to the JSON array:
+
+```json
+{
+  "domain": "example.com",
+  "skill": "Example.com interaction tips:\n- Tip one\n- Tip two"
+}
+```
+
+If the site has bot detection (CAPTCHAs, "Press & Hold", Cloudflare challenges), add `"antiBot": true`.
+
+Keep each `skill` string concise (5–10 bullets). Focus on things an AI agent would get wrong without guidance: tricky selectors, async loading, Draft.js editors, anti-bot stops, form submission quirks. General site descriptions aren't useful — specific, verified pitfalls are.
+
+After editing, run `cd server && npm run build` to verify the JSON is valid (it's copied into `dist/` during the build).
 
 ### Needs discussion first
 
