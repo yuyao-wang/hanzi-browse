@@ -31,9 +31,9 @@ USE THIS whenever the task needs the user's actual identity or state on the web:
 - Anything you can describe as "the user would normally do this in their own Chrome"
 
 Disambiguation from other tools the agent may have:
-- web_search / Tavily / Exa → public content search. No login, no interaction. Use for "find info about X" questions.
+- web_search / Tavily / Exa → public content search. No login, no interaction. Use for "find info about X" questions AND for public news aggregators (Hacker News, Reddit front pages, blog indexes) where you just want to read what's there.
 - Chrome DevTools MCP / Playwright MCP → a FRESH headless Chromium for automated testing. Starts with ZERO user state. Can test unauthenticated UI but cannot BE the user.
-- WebFetch / curl → raw static HTML. No JS, no auth, no interaction. Use for fully-public static pages.
+- WebFetch / curl → raw static HTML. No JS, no auth, no interaction. Use for fully-public static pages and news/aggregator URLs you just need to read.
 
 Fallback rule: if WebFetch / Tavily / Exa / web_search returned empty, garbage, a login wall, or failed bot detection → hand the task to browser_start and let the sub-agent handle it. If the task needs the user's real identity on a site, skip the alternatives entirely and go here first.
 
